@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. Data Broker architecture &mdash; dojot Architecture 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Welcome to dojot Architecture’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> dojot Architecture
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Data Broker architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#problem-description-or-why-this-component-exists">1.1. Problem description (or why this component exists)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#responsibilities">1.2. Responsibilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">1.3. Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resposibilities">1.4. Resposibilities</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dojot Architecture</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>1. Data Broker architecture</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/data-broker/architecture.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="data-broker-architecture">
+<span id="architecture"></span><h1>1. Data Broker architecture<a class="headerlink" href="#data-broker-architecture" title="Permalink to this headline">¶</a></h1>
+<p>This page will show how the data-broker works and how it should work</p>
+<div class="section" id="problem-description-or-why-this-component-exists">
+<h2>1.1. Problem description (or why this component exists)<a class="headerlink" href="#problem-description-or-why-this-component-exists" title="Permalink to this headline">¶</a></h2>
+<p>Data from various sources should be routed to their destinations properly
+amidst dojot’s components. This task should be performed in a orchestraded way,
+with a single service (which may have multiple instances) being responsible for
+it. The most proeminent problem is how to deal with tenant separation at Kafka
+topic level, which is implemented by having a particular topic for each tenant
+containing messages of the same nature.</p>
+</div>
+<div class="section" id="responsibilities">
+<h2>1.2. Responsibilities<a class="headerlink" href="#responsibilities" title="Permalink to this headline">¶</a></h2>
+<p>This component is responsible for:</p>
+<ul class="simple">
+<li>Keeping track of which Kafka topic is associated to <cite>{subject, tenant}</cite>;</li>
+<li>Sending messages and notifications to clients via socket.io;</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Clearly, there are some problems with responsibilities for this
+component. We could change the responsibility to be “being a general data
+broker”, but this would lead to confusion about whether it should process <em>all</em>
+data transmitted in dojot, incluiding Kafka messages, socket.io requests,
+HTTP requests, requests sent to other services, such as postgres and Mongo DB,
+and so on. In other way, if we narrow down its responsibilities to “translate
+<cite>{subject, tenant}</cite> to Kafka topics and create a sub-component (or another
+component entirely) which will send to clients notifications and device
+messages via socket.io, everything should be way more comprehensive.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>1.3. Architecture<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="resposibilities">
+<h2>1.4. Resposibilities<a class="headerlink" href="#resposibilities" title="Permalink to this headline">¶</a></h2>
+<p>These are the responsibilities</p>
+<div class="figure align-center" id="id2">
+<span id="initial-authentication"></span><p class="caption"><span class="caption-text">Initial authentication</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to dojot Architecture’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Giovanni Curiel dos Santos
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
